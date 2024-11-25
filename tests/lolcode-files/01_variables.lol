@@ -1,5 +1,8 @@
 BTW start of the program
 HAI BTW in-line comment
+    OBTW this is
+	the way
+    TLDR
     WAZZUP
         BTW variable dec
         I HAS A monde
@@ -28,6 +31,7 @@ HAI BTW in-line comment
     VISIBLE quo
 
     BTW print expressions
+    VISIBLE SUM OF 3 AN 5 AN SUM OF 9 AN 2
     VISIBLE SUM OF PRODUKT OF 3 AN 5 AN BIGGR OF DIFF OF 17 AN 2 AN 5
     VISIBLE BIGGR OF PRODUKT OF x AN x AN QUOSHUNT OF SUM OF 3 AN 5 AN 2
 KTHXBYE
