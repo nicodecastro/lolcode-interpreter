@@ -175,7 +175,10 @@ class LolcodeInterpreterApp(ctk.CTk):
 
         print(self.tokens)
 
-        for token in self.tokens:
+        # insert tokens to the token table
+        deduped_tokens = self.tokens
+        # deduped_tokens = list(dict.fromkeys(self.tokens))     # TODO UNCOMMENT
+        for token in deduped_tokens:
             self.token_table.insert("", 'end', text="1", values=token)
 
 if __name__=="__main__":
