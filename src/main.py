@@ -6,12 +6,7 @@
 '''
 TODO:
 Important, Urgent
-- Lexemes in line not in order, esp. nested
-- VISIBLE concatenation separated by +
-- Function Identifier
-- Function parameters
-- Loop identifier
-- OBTW & TLDR
+- Update identifiers by type
 
 Important, Not Urgent
 - Writing file when no file selected
@@ -21,6 +16,7 @@ import customtkinter as ctk
 import tkinter.ttk as ttk
 import os
 import lexical_analyzer as la
+import syntax_analyzer as sa
 
 class LolcodeInterpreterApp(ctk.CTk):
     def __init__(self) -> None:
@@ -40,7 +36,7 @@ class LolcodeInterpreterApp(ctk.CTk):
 
         self.setup_gui()
 
-        # self.load_testcase()    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
+        self.load_testcase()    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
 
     def load_testcase(self) -> None:    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
         selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "01_variables.lol")
@@ -144,7 +140,7 @@ class LolcodeInterpreterApp(ctk.CTk):
         # Clear text editor
         self.text_editor.delete("0.0", "end")
 
-        selected_file = ctk.filedialog.askopenfilename(initialdir=os.getcwd(), filetypes=(("LOLCODE files", "*.lol*"), ("all files", "*.*")))
+        selected_file = ctk.filedialog.askopenfilename(initialdir=os.path.join(os.getcwd(), "tests", "lolcode-files"), filetypes=(("LOLCODE files", "*.lol*"), ("all files", "*.*")))
         if selected_file:
             self.current_filepath = selected_file
             self.current_filename.set(os.path.basename(selected_file))
@@ -173,13 +169,26 @@ class LolcodeInterpreterApp(ctk.CTk):
         
         la.lexical_analysis(self.tokens, self.lolcode_source)
 
-        print(self.tokens)
-
         # insert tokens to the token table
         deduped_tokens = self.tokens
         # deduped_tokens = list(dict.fromkeys(self.tokens))     # TODO UNCOMMENT
         for token in deduped_tokens:
             self.token_table.insert("", 'end', text="1", values=token)
+        print("\nAdded deduped tokens to lexemes table\n")
+        
+        self.tokens = la.remove_comments(self.tokens)
+        
+        print(f"List of Tokens:\n{self.tokens}")
+        has_err_code = sa.syntax_analysis(self.tokens, self.syntax_err_handler)
+
+        if has_err_code:
+            print(f"Error {has_err_code}")
+            return
+        
+        # semantic analysis
+
+    def syntax_err_handler(self, token, line):
+        self.console.insert("end", f"Syntax Error: Unexpected token {token} at line {line}\n")
 
 if __name__=="__main__":
     ctk.set_appearance_mode("dark")
