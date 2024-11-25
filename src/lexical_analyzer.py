@@ -6,7 +6,7 @@ LITERAL_VAR_IDENTIFIER_PATTERN = [
     ("NUMBR Literal", "^-?[0-9]+"),
     ("TROOF Literal", "(WIN|FAIL)"),
     ("TYPE Literal", "(NOOB|NUMBR|NUMBAR|YARN|TROOF)"),
-    ("Variable Identifier", "^[a-zA-Z][a-zA-Z0-9_]*")
+    ("Identifier", "^[a-zA-Z][a-zA-Z0-9_]*")
 ]
 
 KEYWORDS_PATTERN = [
@@ -62,12 +62,17 @@ KEYWORDS_PATTERN = [
     ("MKAY","MKAY")
     ]
 
+LEXEME = 0
+CLASSIFICATION = 1
+
 def lexical_analysis(lexeme_table_values: list, lolcode_source: str) -> None:
+    print("\n==================== PERFORMING LEXICAL ANALYSIS ====================\n")
     lolcode_lines = lolcode_source.split("\n")
     is_OBTW = [False]
     tokens = []
 
-    for line in lolcode_lines:
+    for i, line in enumerate(lolcode_lines):
+        print(f"Line {i}: {line}")
         line = line.strip()
         if line:
             tokens.extend(tokenize_classify(line, is_OBTW))
@@ -75,11 +80,12 @@ def lexical_analysis(lexeme_table_values: list, lolcode_source: str) -> None:
             if not is_OBTW[0]:
                 for token in tokens:
                     lexeme_table_values.append(token)
+                print(f"Tokens: {tokens}\n")
                 tokens = []
+    print("==================== COMPLETED LEXICAL ANALYSIS ====================")
     return
 
 def tokenize_classify(line: str, is_OBTW: list) -> list:
-    updated_line = line
     tokens = []
 
     # prev line/s are part of OBTW and TLDR not yet found
@@ -141,8 +147,7 @@ def tokenize_classify(line: str, is_OBTW: list) -> list:
                     found_keyword_token = False
 
         # try concatenation separator
-        print(line)
-        separator_match = re.match(r'\+', line)
+        separator_match = re.match(r'\+ ', line)
         if separator_match:
             found_tokens.append((line[separator_match.start():separator_match.end()], "Concatenation Separator"))
             line = re.sub(r'\+', "", line, count=1).strip()
@@ -173,3 +178,26 @@ def tokenize_classify(line: str, is_OBTW: list) -> list:
     tokens.append(("<linebreak>", "Linebreak"))
     
     return tokens
+
+def remove_comments(tokens: list) -> list:
+    updated_tokens = []
+    # remove comment-related tokens
+    for token in tokens:
+        if token[LEXEME] == 'BTW' or token[LEXEME] == 'OBTW' or token[LEXEME] == 'TLDR' or token[CLASSIFICATION] == 'Comment':
+            pass
+        else:
+            updated_tokens.append(token)
+
+    # fix linebreaks, start & consecutive linebreaks
+    while True:
+        if updated_tokens[0][CLASSIFICATION] == "Linebreak":
+            del updated_tokens[0]
+        else:
+            break
+
+    fixed_tokens = [updated_tokens[0]]
+    for token in updated_tokens[1:]:
+        if fixed_tokens[-1][CLASSIFICATION] != 'Linebreak' or token != fixed_tokens[-1]:
+            fixed_tokens.append(token)
+
+    return fixed_tokens
