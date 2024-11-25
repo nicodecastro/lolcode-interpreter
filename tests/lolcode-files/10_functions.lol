@@ -1,4 +1,9 @@
 HAI
+    WAZZUP
+        I HAS A name
+        I HAS A num1
+        I HAS A num2
+    BUHBYE
 
     HOW IZ I addNum x y
         FOUND YR SUM OF x AN y
@@ -12,13 +17,6 @@ HAI
     HOW IZ I printNum x
         FOUND YR x
     IF U SAY SO
-
-
-    WAZZUP
-        I HAS A name
-        I HAS A num1
-        I HAS A num2
-    BUHBYE
 
     GIMMEH num1
     GIMMEH num2
