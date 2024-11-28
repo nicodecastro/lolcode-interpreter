@@ -19,6 +19,8 @@ import os
 import lexical_analyzer as la
 import syntax_analyzer as sa
 
+SYNTAX_ERR = 1
+
 class LolcodeInterpreterApp(ctk.CTk):
     def __init__(self) -> None:
         super().__init__()
@@ -40,7 +42,7 @@ class LolcodeInterpreterApp(ctk.CTk):
         self.load_testcase()    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
 
     def load_testcase(self) -> None:    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
-        selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "01_variables.lol")
+        selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "10_functions.lol")
         self.current_filepath = selected_file
         self.current_filename.set(os.path.basename(selected_file))
         file = open(self.current_filepath, 'r')
@@ -162,6 +164,9 @@ class LolcodeInterpreterApp(ctk.CTk):
         for token in self.token_table.get_children():
             self.token_table.delete(token)
 
+        # Reset console
+        self.console.delete(1.0, "end")
+
         # save edits
         self.lolcode_source = self.text_editor.get("1.0", "end-1c")
         file = open(self.current_filepath, 'w')
@@ -188,8 +193,9 @@ class LolcodeInterpreterApp(ctk.CTk):
         
         # semantic analysis
 
-    def syntax_err_handler(self, token, line):
-        self.console.insert("end", f"Syntax Error: Unexpected token {token} at line {line}\n")
+    def syntax_err_handler(self, message):
+        self.console.insert("end", f"Syntax Error: {message}\n")
+        return SYNTAX_ERR
 
 if __name__=="__main__":
     ctk.set_appearance_mode("dark")

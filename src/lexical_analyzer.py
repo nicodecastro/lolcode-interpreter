@@ -200,4 +200,7 @@ def remove_comments(tokens: list) -> list:
         if fixed_tokens[-1][CLASSIFICATION] != 'Linebreak' or token != fixed_tokens[-1]:
             fixed_tokens.append(token)
 
+    while fixed_tokens[-1][CLASSIFICATION] == 'Linebreak':
+        del fixed_tokens[-1]
+
     return fixed_tokens
