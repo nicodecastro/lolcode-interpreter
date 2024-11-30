@@ -1,3 +1,8 @@
+'''
+TODO Bugs
+- Extra chars showing up as separate word, e.g. NUMBARR => NUMBAR and R
+'''
+
 import re
 
 LITERAL_VAR_IDENTIFIER_PATTERN = [
@@ -82,6 +87,8 @@ def lexical_analysis(lexeme_table_values: list, lolcode_source: str) -> None:
                     lexeme_table_values.append(token)
                 print(f"Tokens: {tokens}\n")
                 tokens = []
+            if is_OBTW[0] and i == len(lolcode_lines)-1:
+                lexeme_table_values.append([None, "No closing TLDR"])
     print("==================== COMPLETED LEXICAL ANALYSIS ====================")
     return
 
@@ -95,7 +102,7 @@ def tokenize_classify(line: str, is_OBTW: list) -> list:
             tokens.append(("TLDR", "Keyword"))
             invalid = tldr_match.group(1).strip()
             if invalid:
-                tokens.append((invalid, "Invalid"))
+                tokens.append((invalid, "Invalid statements after TLDR"))
             is_OBTW[0] = False      # next lines are not part of OBTW anymore since TLDR was found
         else:
             tokens.append((line, "Comment"))
@@ -150,15 +157,17 @@ def tokenize_classify(line: str, is_OBTW: list) -> list:
         separator_match = re.match(r'\+ ', line)
         if separator_match:
             found_tokens.append((line[separator_match.start():separator_match.end()], "Concatenation Separator"))
-            line = re.sub(r'\+', "", line, count=1).strip()
-            pass       # start searching for keyword again
+            line = re.sub(r'\+ ', " ", line, count=1).strip()
+            tokens.extend(found_tokens)
+            continue       # start searching for keyword again
 
         # try for literal
         yarn_token_match = re.match('(\"[^"]+\")', line)
         if yarn_token_match:
             found_tokens.append((yarn_token_match.group(1), "YARN Literal"))
             line = re.sub('\"[^"]+\"', " ", line, count=1).strip()
-            pass    # start searching for keyword again
+            tokens.extend(found_tokens)
+            continue    # start searching for keyword again
 
         # try for other literals
         for literal, pattern in LITERAL_VAR_IDENTIFIER_PATTERN:
@@ -178,29 +187,3 @@ def tokenize_classify(line: str, is_OBTW: list) -> list:
     tokens.append(("<linebreak>", "Linebreak"))
     
     return tokens
-
-def remove_comments(tokens: list) -> list:
-    updated_tokens = []
-    # remove comment-related tokens
-    for token in tokens:
-        if token[LEXEME] == 'BTW' or token[LEXEME] == 'OBTW' or token[LEXEME] == 'TLDR' or token[CLASSIFICATION] == 'Comment':
-            pass
-        else:
-            updated_tokens.append(token)
-
-    # fix linebreaks, start & consecutive linebreaks
-    while True:
-        if updated_tokens[0][CLASSIFICATION] == "Linebreak":
-            del updated_tokens[0]
-        else:
-            break
-
-    fixed_tokens = [updated_tokens[0]]
-    for token in updated_tokens[1:]:
-        if fixed_tokens[-1][CLASSIFICATION] != 'Linebreak' or token != fixed_tokens[-1]:
-            fixed_tokens.append(token)
-
-    while fixed_tokens[-1][CLASSIFICATION] == 'Linebreak':
-        del fixed_tokens[-1]
-
-    return fixed_tokens
