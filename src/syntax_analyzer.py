@@ -311,7 +311,57 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
             parse_tree[index] = switch_case_tokens
         index += 1
 
-    # =============== TODO Loops ===============
+    # =============== Loops ===============
+    index = 0
+    for token in parse_tree:
+        if token[LEXEME] == "IM IN YR":
+            del parse_tree[index]
+            loop_tokens = ["loop"]
+            if parse_tree[index][TYPE] != "looplabel":
+                return syntax_err_handler("Expected label for loop")
+            loop_label = parse_tree[index]
+            loop_tokens.append(loop_label)
+            del parse_tree[index]
+            if parse_tree[index][LEXEME] not in ("UPPIN", "NERFIN"):
+                return syntax_err_handler("Expected 'UPPIN/NERFIN' operation for loop")
+            loop_tokens.append(['loopop', parse_tree[index][LEXEME]])
+            del parse_tree[index]
+            if parse_tree[index][LEXEME] != "YR":
+                return syntax_err_handler("Expected 'YR' for loop")
+            del parse_tree[index]
+            if parse_tree[index][TYPE] != "varident":
+                return syntax_err_handler("Expected variable for loop")
+            loop_tokens[-1].append(parse_tree[index])
+            del parse_tree[index]
+            if parse_tree[index][LEXEME] not in ("TIL", "WILE"):
+                return syntax_err_handler("Expected 'TIL/WILE' for loop")
+            loop_tokens.append(['condexpr', parse_tree[index][LEXEME]])
+            del parse_tree[index]
+            if parse_tree[index][TYPE] != "expr":
+                return syntax_err_handler("Expected expression for loop")
+            loop_tokens[-1].append(parse_tree[index])
+            del parse_tree[index]
+
+            if parse_tree[index] != 'linebreak':
+                return syntax_err_handler("Unexpected statements after loop expression")
+            del parse_tree[index]
+
+            loop_statements = ['loopstatements']
+            while index < len(parse_tree)-1 and parse_tree[index][LEXEME] not in ('IM OUTTA YR'):
+                if parse_tree[index][LEXEME] in ("IM IN YR", "TIL", "WILE", "UPPIN", "NERFIN"):
+                    return syntax_err_handler("Unexpected loop nesting")
+                elif parse_tree[index] != "linebreak":
+                    loop_statements.append(parse_tree[index])
+                del parse_tree[index]
+            if parse_tree[index] == parse_tree[-1]:
+                return syntax_err_handler("Expected 'IM OUTTA YR' for loop")
+            del parse_tree[index]
+            if parse_tree[index][CLASSIFICATION] != loop_label[CLASSIFICATION]:
+                return syntax_err_handler("Unexpected loop label in 'IM OUTTA YR'")
+            loop_tokens.append(loop_statements)
+
+            parse_tree[index] = loop_tokens
+        index += 1
 
     # =============== Variable Declaration ===============
     index = 0

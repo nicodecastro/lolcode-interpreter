@@ -43,7 +43,7 @@ class LolcodeInterpreterApp(ctk.CTk):
         self.load_testcase()    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
 
     def load_testcase(self) -> None:    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
-        selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "08_switch.lol")
+        selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "09_loops.lol")
         self.current_filepath = selected_file
         self.current_filename.set(os.path.basename(selected_file))
         file = open(self.current_filepath, 'r')
