@@ -17,7 +17,8 @@ import customtkinter as ctk
 import tkinter.ttk as ttk
 import os
 import lexical_analyzer as la
-import syntax_analyzer as sa
+import syntax_analyzer as syna
+import semantic_analyzer as sema
 
 SYNTAX_ERR = 1
 
@@ -42,7 +43,7 @@ class LolcodeInterpreterApp(ctk.CTk):
         self.load_testcase()    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
 
     def load_testcase(self) -> None:    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
-        selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "10_functions.lol")
+        selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "08_switch.lol")
         self.current_filepath = selected_file
         self.current_filename.set(os.path.basename(selected_file))
         file = open(self.current_filepath, 'r')
@@ -161,8 +162,7 @@ class LolcodeInterpreterApp(ctk.CTk):
     def execute(self) -> None:
         # Reset tokens & token table
         self.tokens = []
-        for token in self.token_table.get_children():
-            self.token_table.delete(token)
+        self.reset_lexeme_table()
 
         # Reset console
         self.console.delete(1.0, "end")
@@ -176,22 +176,36 @@ class LolcodeInterpreterApp(ctk.CTk):
         la.lexical_analysis(self.tokens, self.lolcode_source)
 
         # insert tokens to the token table
-        deduped_tokens = self.tokens
-        # deduped_tokens = list(dict.fromkeys(self.tokens))     # TODO UNCOMMENT
-        for token in deduped_tokens:
-            self.token_table.insert("", 'end', text="1", values=token)
-        print("\nAdded deduped tokens to lexemes table\n")
+        self.add_to_lexeme_table(self.tokens)
         
-        self.tokens = la.remove_comments(self.tokens)
-        
-        print(f"List of Tokens:\n{self.tokens}")
-        has_err_code = sa.syntax_analysis(self.tokens, self.syntax_err_handler)
-
-        if has_err_code:
-            print(f"Error {has_err_code}")
+        self.tokens = syna.remove_comments(self.tokens, self.syntax_err_handler)
+        if self.tokens == SYNTAX_ERR:
+            self.reset_lexeme_table()
+            print(f"Error {SYNTAX_ERR}")
             return
         
+        parse_tree = syna.syntax_analysis(self.tokens, self.syntax_err_handler)
+        if parse_tree == SYNTAX_ERR:
+            print(f"Error {SYNTAX_ERR}")
+            return
+        
+        # update tokens after syntax analysis
+        self.reset_lexeme_table()
+        self.add_to_lexeme_table(self.tokens)
+        
         # semantic analysis
+        # sema.semantic_analysis(parse_tree)
+
+    def reset_lexeme_table(self):
+        for token in self.token_table.get_children():
+            self.token_table.delete(token)
+
+    def add_to_lexeme_table(self, tokens):
+        deduped_tokens = tokens
+        # deduped_tokens = list(dict.fromkeys(tokens))     # TODO UNCOMMENT
+        for token in deduped_tokens:
+            self.token_table.insert("", 'end', text="1", values=token)
+        print("\nAdded deduped tokens to lexemes table")
 
     def syntax_err_handler(self, message):
         self.console.insert("end", f"Syntax Error: {message}\n")
