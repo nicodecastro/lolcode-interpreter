@@ -45,14 +45,14 @@ KEYWORDS_PATTERN = [
     ("AN","^AN "),
     ("IS NOW A","IS NOW A"),
     ("GIMMEH","^GIMMEH"),
-    ("O RLY",r"^O RLY\?"),
+    ("O RLY?",r"^O RLY\?"),
     ("YA RLY","^YA RLY"),
     ("MEBBE","^MEBBE"),
     ("NO WAI","^NO WAI"),
     ("OIC","^OIC"),
-    ("WTF",r"^WTF\?"),
-    ("OMG","^OMG"),
+    ("WTF?",r"^WTF\?"),
     ("OMGWTF","^OMGWTF"),
+    ("OMG","^OMG"),
     ("IM IN YR","^IM IN YR"),
     ("UPPIN","UPPIN"),
     ("NERFIN","NERFIN"),
@@ -185,5 +185,8 @@ def tokenize_classify(line: str, is_OBTW: list) -> list:
         tokens.extend(inline_btw_tokens)
 
     tokens.append(("<linebreak>", "Linebreak"))
-    
+
+    if line.strip():
+        tokens.append((f"{line}", "Invalid Token"))
+
     return tokens
