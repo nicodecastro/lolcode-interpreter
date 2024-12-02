@@ -1,12 +1,6 @@
 '''
 Implement
-- variables /
-- operations
-- input/output
-- if-then
-- switch-case
-- loops
-- functions
+TODO Noob
 '''
 
 LEXEME = 0
@@ -60,12 +54,19 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
     for token in parse_tree:
         # function name
         if token[LEXEME] in ["HOW IZ I", "I IZ"] and index < len(parse_tree)-1 and parse_tree[index+1][CLASSIFICATION] == "Identifier":
-            parse_tree[index+1] = ["funcname", parse_tree[index+1][LEXEME]]
             tokens[index+1] = (parse_tree[index+1][LEXEME], "Function Name")
+            parse_tree[index+1] = ["funcname", parse_tree[index+1][LEXEME]]
+            params_index = 2
+            while token[LEXEME] == "HOW IZ I" and index < len(parse_tree)-params_index and parse_tree[index+params_index][CLASSIFICATION] != 'Linebreak':
+                if parse_tree[index+params_index][CLASSIFICATION] == "Identifier":
+                    tokens[index+params_index] = (parse_tree[index+params_index][LEXEME], "Function Parameter")
+                    parse_tree[index+params_index] = ["funcparam", parse_tree[index+params_index][LEXEME]]
+                params_index += 1
+        # TODO function params
         # loop label
         elif token[LEXEME] in ["IM IN YR", "IM OUTTA YR"] and index < len(parse_tree)-1 and parse_tree[index+1][CLASSIFICATION] == "Identifier":
-            parse_tree[index+1] = ["looplabel", parse_tree[index+1][LEXEME]]
             tokens[index+1] = (parse_tree[index+1][LEXEME], "Loop Label")
+            parse_tree[index+1] = ["looplabel", parse_tree[index+1][LEXEME]]
         # variable
         elif token[CLASSIFICATION] == "Identifier":
             tokens[index] = (parse_tree[index][LEXEME], "Variable Identifier")
@@ -80,13 +81,7 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
     index = 0
     for token in parse_tree:
         # =============== Keywords w/o Nesting ===============
-        if token[LEXEME] == "HAI":
-            parse_tree[index] = "HAI"
-
-        elif token[LEXEME] == "KTHXBYE":
-            parse_tree[index] = "KTHXBYE"
-
-        elif token[LEXEME] in ("GTFO"):
+        if token[LEXEME] in ("GTFO"):
             parse_tree[index] = "loopbreak"
 
         # =============== Variable Assignment ===============
@@ -158,7 +153,6 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
                     else:
                         return syntax_err_handler("Unexpected statements in 'ANY OF' or 'ALL OF'")
                 else:
-                    print(parse_tree[bool_start_index][LEXEME])
                     return syntax_err_handler("Expected variable, literal, or expression for 'ANY OF' or 'ALL OF'")
             if bool_start_index < len(parse_tree)-1 and parse_tree[bool_start_index] == 'linebreak':
                 return syntax_err_handler("Expected closing 'MKAY' keyword for 'ANY OF' or 'ALL OF'")
@@ -203,10 +197,8 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
                     elif parse_tree[print_start_index] == "linebreak":
                         pass
                     else:
-                        print(parse_tree[print_start_index])
                         return syntax_err_handler("Unexpected statements in 'VISIBLE'")
                 else:
-                    print(parse_tree[print_start_index])
                     return syntax_err_handler("Expected variable, literal, or expression for 'VISIBLE'")
             parse_tree[index] = print_tokens
 
@@ -216,6 +208,50 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
             del parse_tree[index+1]
         elif token[LEXEME] == 'varassign' and (index >= len(parse_tree)-1 or parse_tree[index+1][TYPE] not in ("literal", "varident", "expr")):
             return syntax_err_handler("Expected literal, variable, or expression in variable assignment")
+        
+        # =============== Function Calls ===============
+        elif token[LEXEME] == "I IZ":
+            del parse_tree[index]
+            funcall_tokens = ["funcall"]
+
+            if parse_tree[index][TYPE] != "funcname":
+                return syntax_err_handler("Expected name for function call")
+            funcall_tokens.append(parse_tree[index])
+            del parse_tree[index]
+
+            # parameters I IZ <function name> [YR <expression1> [AN YR <expression2> AN YR <expression2>]] MKAY
+            if parse_tree[index][LEXEME] != "YR" and parse_tree[index] != "linebreak":
+                return syntax_err_handler("Unexpected statements after function definition")
+
+            funccall_param_tokens = ["params"]
+            # YR x
+            if parse_tree[index][LEXEME] == "YR":
+                del parse_tree[index]
+                if parse_tree[index][TYPE] not in ('expr', 'varident', 'literal'):
+                    return syntax_err_handler("Expected parameter in function call")
+                funccall_param_tokens.append(parse_tree[index])
+                del parse_tree[index]
+            # AN YR y
+            while parse_tree[index] != "linebreak" and parse_tree[index][LEXEME] != 'MKAY':
+                if parse_tree[index][LEXEME] != "AN":
+                    return syntax_err_handler("Unexpected statements after function definition")
+                del parse_tree[index]
+                if parse_tree[index][LEXEME] != "YR":
+                    return syntax_err_handler("Unexpected statements after function definition")
+                del parse_tree[index]
+                if parse_tree[index][TYPE] not in ('expr', 'varident', 'literal'):
+                    return syntax_err_handler("Expected valid function parameter in function definition")
+                funccall_param_tokens.append(parse_tree[index])
+                del parse_tree[index]
+            funcall_tokens.append(funccall_param_tokens)
+
+            # if parse_tree[index][LEXEME] != 'MKAY':
+            #     return syntax_err_handler("Expected 'MKAY' after function call")
+            if parse_tree[index] != "linebreak":
+                return syntax_err_handler("Unexpected statements after function call")
+
+            parse_tree.insert(index, funcall_tokens)
+
         index += 1
 
     # =============== If-then Statements ===============
@@ -333,7 +369,7 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
                 return syntax_err_handler("Expected variable for loop")
             loop_tokens[-1].append(parse_tree[index])
             del parse_tree[index]
-            if parse_tree[index][LEXEME] not in ("TIL", "WILE"):
+            if parse_tree[index][LEXEME] not in ("TIL", "WILE"):        # TODO optional TIL/WILE <expr>
                 return syntax_err_handler("Expected 'TIL/WILE' for loop")
             loop_tokens.append(['condexpr', parse_tree[index][LEXEME]])
             del parse_tree[index]
@@ -384,7 +420,6 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
             else:
                 return syntax_err_handler("Expected literal, variable, or expression for variable initialization")
         elif token[TYPE] == "vardec" and index < len(parse_tree)-1 and parse_tree[index+1] != "linebreak":
-            print(token)
             return syntax_err_handler("Unexpected statements after variable declaration")
         index += 1
 
@@ -415,46 +450,142 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
             return syntax_err_handler("Unexpected statements after 'WAZZUP'")
         index += 1
 
-    # =============== TODO Statements ===============
-    # elif token[LEXEME] == "HAI":
-    #     parse_tree[index] = "HAI"
+    # =============== Functions ===============
+    index = 0
+    for token in parse_tree:
+        if token[LEXEME] == "HOW IZ I":
+            del parse_tree[index]
+            func_tokens = ["funcdef"]
 
-    # elif token[LEXEME] == "KTHXBYE":
-    #     parse_tree[index] = "KTHXBYE"
+            if parse_tree[index][TYPE] != "funcname":
+                return syntax_err_handler("Expected name for function definition")
+            func_tokens.append(parse_tree[index])
+            del parse_tree[index]
 
-    # =============== TODO Functions ===============
+            # parameters HOW IZ I sample_function2 YR x AN YR y
+            if parse_tree[index][LEXEME] != "YR" and parse_tree[index] != "linebreak":
+                return syntax_err_handler("Unexpected statements after function definition")
 
-    # =============== TODO Program ===============
-    # program = ['program']
-    # index = 0
-    # for token in parse_tree:
-    #     if token[0] == 'HAI':
-    #         break
-    #     program.append(token)
-    #     index += 1
+            func_param_tokens = ["params"]
+            # YR x
+            if parse_tree[index][LEXEME] == "YR":
+                del parse_tree[index]
+                if parse_tree[index][TYPE] != "funcparam":
+                    print(parse_tree[index])
+                    return syntax_err_handler("Expected valid function parameter in function definition")
+                func_param_tokens.append(parse_tree[index])
+                del parse_tree[index]
+            # AN YR y
+            while parse_tree[index] != "linebreak":
+                if parse_tree[index][LEXEME] != "AN":
+                    return syntax_err_handler("Unexpected statements after function definition")
+                del parse_tree[index]
+                if parse_tree[index][LEXEME] != "YR":
+                    return syntax_err_handler("Unexpected statements after function definition")
+                del parse_tree[index]
+                if parse_tree[index][TYPE] != "funcparam":
+                    return syntax_err_handler("Expected valid function parameter in function definition")
+                func_param_tokens.append(parse_tree[index])
+                del parse_tree[index]
+            func_tokens.append(func_param_tokens)
 
-    # if index == len(parse_tree):
-    #     return syntax_err_handler("Expected 'HAI' at the start of the program")
-    # else:
-    #     program.append(parse_tree[index])
-    #     index += 2
+            func_statements = ['funcstatements']
+            while index < len(parse_tree)-1 and parse_tree[index] != 'loopbreak':
+                if parse_tree[index][LEXEME] in ("HOW IZ I"):
+                    return syntax_err_handler("Unexpected function nesting")
+                elif parse_tree[index][LEXEME] in ('IF U SAY SO', 'FOUND YR'):
+                    break
+                elif parse_tree[index] != "linebreak":
+                    func_statements.append(parse_tree[index])
+                del parse_tree[index]
+            if parse_tree[index] == parse_tree[-1]:
+                return syntax_err_handler("Expected 'IF U SAY SO' for function")
+            retval = ['returnval']
+            if parse_tree[index][LEXEME] == 'FOUND YR':
+                del parse_tree[index]
+                if parse_tree[index][TYPE] in ('expr', 'varident'):
+                    retval.append(parse_tree[index])
+                    del parse_tree[index]
+                if parse_tree[index] != 'linebreak':
+                    return syntax_err_handler("Unexpected statements after 'FOUND YR'")
+                del parse_tree[index]
+            elif parse_tree[index] == 'loopbreak':
+                retval.append('NOOB')
+                del parse_tree[index]
+                if parse_tree[index] != 'linebreak':
+                    return syntax_err_handler("Unexpected statements after 'GTFO'")
+                del parse_tree[index]
+            if parse_tree[index][LEXEME] != "IF U SAY SO":
+                return syntax_err_handler("Expected 'IF U SAY SO' for function")
+            del parse_tree[index]
+            if index < len(parse_tree)-1 and parse_tree[index] != "linebreak":
+                return syntax_err_handler("Unexpected statements after 'IF U SAY SO'")
+            if index < len(parse_tree)-1:
+                del parse_tree[index]
+            func_tokens.append(func_statements)
+            func_tokens.append(retval)
+            parse_tree.insert(0, func_tokens)
+        index += 1
 
-    # if parse_tree[index][0] == 'vardecs':
-    #     program.append(parse_tree[index])
-    #     index += 2
+    # =============== Statements ===============
+    index = 0
+    for token in parse_tree:
+        if token[LEXEME] == 'HAI':
+            index += 1
+            if parse_tree[index] != 'linebreak':
+                return syntax_err_handler("Unexpected statements after HAI")
+            
+            if index < len(parse_tree)-1 and parse_tree[index+1][TYPE] == 'vardecport':
+                del parse_tree[index]
+                index += 1
 
-    # if parse_tree[index][0] == 'statements':
-    #     program.append(parse_tree[index])
-    #     index += 2
+            statements = ['statements']
+            while index < len(parse_tree)-1 and parse_tree[index][LEXEME] != 'KTHXBYE':
+                if parse_tree[index] != 'linebreak':
+                    return syntax_err_handler("Multiple statements on single line")
+                del parse_tree[index]
+                if parse_tree[index][LEXEME] != 'KTHXBYE':
+                    statements.append(parse_tree[index])
+                    del parse_tree[index]
+            parse_tree.insert(index, statements)
+            break
+        index += 1
+
+    # =============== Program ===============
+    program = ['program']
+    while parse_tree[0][LEXEME] != "HAI":
+        if parse_tree[0][TYPE] != 'funcdef':
+            return syntax_err_handler("Unexpected statements before 'HAI'")
+        program.append(parse_tree[0])
+        del parse_tree[0]
+
     
-    # if parse_tree[index] == 'KTHXBYE':
-    #     program.append(parse_tree[index])
+    if parse_tree[0][LEXEME] != "HAI":
+        return syntax_err_handler("Expected 'HAI' at the start of the program")
+    program.append(['begin', 'HAI'])
+    del parse_tree[0]
+
+    if parse_tree[0][TYPE] == 'vardecport':
+        program.append(parse_tree[0])
+        del parse_tree[0]
+
+    if parse_tree[0][LEXEME] == "statements":
+        program.append(parse_tree[0])
+        del parse_tree[0]
+
+    if parse_tree[0][LEXEME] != "KTHXBYE":
+        return syntax_err_handler("Expected 'KTHXBYE' at the end of the program")
+    program.append(['end', 'KTHXBYE'])
+    del parse_tree[0]
+
+    if len(parse_tree) != 0 and parse_tree[0] != 'linebreak':
+        return syntax_err_handler("Unexpected statements after KTHXBYE")
 
     print(f"Parse Tree:")
-    for node in parse_tree:
+    for node in program:
         print(node)
     print("\n==================== COMPLETED SYNTAX ANALYSIS ====================")
-    return parse_tree
+    return program
 
 def parse_expression(tokens, syntax_err_handler, del_index):
     if tokens[0][TYPE] in ("SUM OF", "DIFF OF", "PRODUKT OF", "QUOSHUNT OF", "MOD OF", "BIGGR OF", "SMALLR OF", "BOTH SAEM", "DIFFRINT"):
@@ -497,7 +628,6 @@ def parse_expression(tokens, syntax_err_handler, del_index):
         del tokens[0]
         return operand
     else:
-        print(tokens[0])
         return syntax_err_handler("Unexpected operation")
     
 # def parse_boolop(tokens, syntax_err_handler, del_index):

@@ -81,7 +81,7 @@ class LolcodeInterpreterApp(ctk.CTk):
         token_table_label.grid(column=0, row=0, sticky="nsew")
 
         # Lexeme Table
-        token_table_frame = ctk.CTkFrame(upper_mid_frame, fg_color='green')
+        token_table_frame = ctk.CTkFrame(upper_mid_frame)
         token_table_frame.grid(column=0, row=1, sticky="nsew")
         token_table_frame.grid_columnconfigure(0, weight=1)
         token_table_frame.grid_rowconfigure(0, weight=1)
@@ -115,7 +115,7 @@ class LolcodeInterpreterApp(ctk.CTk):
         symbol_table_frame.grid_rowconfigure(0, weight=1)
 
         self.symbol_table = ttk.Treeview(symbol_table_frame, columns=("Identifier", "Value"), show="headings")
-        self.symbol_table.grid(column=0, row=0, sticky="new")
+        self.symbol_table.grid(column=0, row=0, sticky="nsew")
         self.symbol_table.column("#1", anchor=ctk.CENTER)
         self.symbol_table.heading("#1", text="Identifier")
         self.symbol_table.column("#2", anchor=ctk.CENTER)
