@@ -21,6 +21,7 @@ import syntax_analyzer as syna
 import semantic_analyzer as sema
 
 SYNTAX_ERR = 1
+SEMANTIC_ERR = 2
 
 class LolcodeInterpreterApp(ctk.CTk):
     def __init__(self) -> None:
@@ -37,13 +38,14 @@ class LolcodeInterpreterApp(ctk.CTk):
 
         self.lolcode_source = None
         self.tokens = []
+        self.symbols = []
 
         self.setup_gui()
 
         self.load_testcase()    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
 
     def load_testcase(self) -> None:    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
-        selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "09_loops.lol")
+        selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "01_variables.lol")
         self.current_filepath = selected_file
         self.current_filename.set(os.path.basename(selected_file))
         file = open(self.current_filepath, 'r')
@@ -162,10 +164,10 @@ class LolcodeInterpreterApp(ctk.CTk):
     def execute(self) -> None:
         # Reset tokens & token table
         self.tokens = []
+        self.symbols = []
         self.reset_lexeme_table()
-
-        # Reset console
-        self.console.delete(1.0, "end")
+        self.reset_symbol_table()
+        self.reset_console()
 
         # save edits
         self.lolcode_source = self.text_editor.get("1.0", "end-1c")
@@ -181,12 +183,12 @@ class LolcodeInterpreterApp(ctk.CTk):
         self.tokens = syna.remove_comments(self.tokens, self.syntax_err_handler)
         if self.tokens == SYNTAX_ERR:
             self.reset_lexeme_table()
-            print(f"Error {SYNTAX_ERR}")
+            print(f"Error SYNTAX_ERR")
             return
         
         parse_tree = syna.syntax_analysis(self.tokens, self.syntax_err_handler)
         if parse_tree == SYNTAX_ERR:
-            print(f"Error {SYNTAX_ERR}")
+            print(f"Error SYNTAX_ERR")
             return
         
         # update tokens after syntax analysis
@@ -194,11 +196,24 @@ class LolcodeInterpreterApp(ctk.CTk):
         self.add_to_lexeme_table(self.tokens)
         
         # semantic analysis
-        # sema.semantic_analysis(parse_tree)
+        sem_success = sema.semantic_analysis(self.symbols, parse_tree, self.print_console, self.reset_console, self.semantic_err_handler)
+        if sem_success == SEMANTIC_ERR:
+            print(f"Error SEMANTIC_ERR")
+            return
+
+        # update symbol table
+        self.add_to_symbol_table(self.symbols)
 
     def reset_lexeme_table(self):
         for token in self.token_table.get_children():
             self.token_table.delete(token)
+
+    def reset_symbol_table(self):
+        for symbol in self.symbol_table.get_children():
+            self.symbol_table.delete(symbol)
+
+    def reset_console(self):
+        self.console.delete('1.0', "end")
 
     def add_to_lexeme_table(self, tokens):
         deduped_tokens = tokens
@@ -207,9 +222,21 @@ class LolcodeInterpreterApp(ctk.CTk):
             self.token_table.insert("", 'end', text="1", values=token)
         print("\nAdded deduped tokens to lexemes table")
 
+    def add_to_symbol_table(self, vars):
+        for var in vars:
+            self.symbol_table.insert("", 'end', text="1", values=var)
+        print("\nAdded variables to symbol table")
+
+    def print_console(self, message):
+        self.console.insert("end", f"{message}\n")
+
     def syntax_err_handler(self, message):
         self.console.insert("end", f"Syntax Error: {message}\n")
         return SYNTAX_ERR
+    
+    def semantic_err_handler(self, message):
+        self.console.insert("end", f"Semantic Error: {message}\n")
+        return SEMANTIC_ERR
 
 if __name__=="__main__":
     ctk.set_appearance_mode("dark")
