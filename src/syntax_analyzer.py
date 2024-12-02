@@ -189,7 +189,7 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
             print_start_index = index+1
             print_tokens = ["print"]
             while print_start_index < len(parse_tree)-1 and parse_tree[print_start_index] != 'linebreak':
-                if parse_tree[print_start_index][TYPE] in ('varident', 'literal', 'expr', 'concat'):
+                if parse_tree[print_start_index][TYPE] in ('varident', 'literal', 'expr', 'concat', 'typecast'):
                     print_tokens.append(parse_tree[print_start_index])
                     del parse_tree[print_start_index]
                     if parse_tree[print_start_index][LEXEME] == "AN" or parse_tree[print_start_index][LEXEME] == "+ ":
@@ -203,10 +203,10 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
             parse_tree[index] = print_tokens
 
         # =============== Variable Assignment pt. 2 ===============
-        elif token[LEXEME] == 'varassign' and index < len(parse_tree)-1 and parse_tree[index+1][TYPE] in ("literal", "varident", "expr"):
+        elif token[LEXEME] == 'varassign' and index < len(parse_tree)-1 and parse_tree[index+1][TYPE] in ("literal", "varident", "expr", "concat", 'typecast'):
             parse_tree[index].append(parse_tree[index+1])
             del parse_tree[index+1]
-        elif token[LEXEME] == 'varassign' and (index >= len(parse_tree)-1 or parse_tree[index+1][TYPE] not in ("literal", "varident", "expr")):
+        elif token[LEXEME] == 'varassign' and (index >= len(parse_tree)-1 or parse_tree[index+1][TYPE] not in ("literal", "varident", "expr", "concat", 'typecast')):
             return syntax_err_handler("Expected literal, variable, or expression in variable assignment")
         
         # =============== Function Calls ===============
