@@ -91,10 +91,10 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
 
         # =============== Typecasting ===============
         elif token[LEXEME] == "MAEK":
-            # TODO Clarify if need A, e.g. MAEK var1 A NUMBAR vs. y R MAEK A y TROOF (for now implementation is MAEK A)
-            if index < len(parse_tree)-2 and parse_tree[index+1][LEXEME] == "A" and (parse_tree[index+2][TYPE] in ("varident", "literal")):
+            # TODO Clarify if need A, e.g. MAEK var1 A NUMBAR vs. y R MAEK A y TROOF (for now implementation is MAEK y A TROOF)
+            if index < len(parse_tree)-2 and parse_tree[index+2][LEXEME] == "A" and (parse_tree[index+1][TYPE] in ("varident", "literal")):
                 if index < len(parse_tree)-3 and (parse_tree[index+3][CLASSIFICATION] == "TYPE Literal"):
-                    parse_tree[index] = ["typecast", parse_tree[index+2], parse_tree[index+3]]
+                    parse_tree[index] = ["typecast", parse_tree[index+1], parse_tree[index+3]]
                     del parse_tree[index+1:index+4]
                 else:
                     return syntax_err_handler("Expected type literal to typecast to")
@@ -588,8 +588,22 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
     return program
 
 def parse_expression(tokens, syntax_err_handler, del_index):
-    if tokens[0][TYPE] in ("SUM OF", "DIFF OF", "PRODUKT OF", "QUOSHUNT OF", "MOD OF", "BIGGR OF", "SMALLR OF", "BOTH SAEM", "DIFFRINT"):
+    if tokens[0][TYPE] in ("SUM OF", "DIFF OF", "PRODUKT OF", "QUOSHUNT OF", "MOD OF", "BIGGR OF", "SMALLR OF"):
         operation = ["operation", tokens[0][TYPE]]
+        del tokens[0]
+        del_index[0] += 1
+        left_expr = parse_expression(tokens, syntax_err_handler, del_index)
+        if tokens[0][LEXEME] == "AN":
+            del tokens[0]
+            del_index[0] += 2
+        else:
+            return syntax_err_handler("Unexpected operation")
+        right_expr = parse_expression(tokens, syntax_err_handler, del_index)
+        operation.append(left_expr)
+        operation.append(right_expr)
+        return operation
+    elif tokens[0][TYPE] in ("BOTH SAEM", "DIFFRINT"):
+        operation = ["compop", tokens[0][TYPE]]
         del tokens[0]
         del_index[0] += 1
         left_expr = parse_expression(tokens, syntax_err_handler, del_index)
