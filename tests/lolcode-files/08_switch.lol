@@ -13,7 +13,7 @@ HAI
 	VISIBLE "Choice: "
 	GIMMEH choice
 
-	choice
+	choice IS NOW A NUMBAR		BTW added since choice YARN and no auto typecast
 	WTF?
 		OMG 1
 			VISIBLE "Enter birth year: "

@@ -24,7 +24,8 @@ HAI
     BTW max(x,y) - min(x,y)
     VISIBLE DIFF OF BIGGR OF x AN y AN SMALLR OF x AN y
 
-    BTW x + y/x + 0
+    BTW x + (y/x + 0)
     VISIBLE SUM OF x AN SUM OF QUOSHUNT OF y AN x AN FAIL
+    BTW x + (17/x + 0)
     VISIBLE SUM OF x AN SUM OF QUOSHUNT OF "17" AN x AN FAIL
 KTHXBYE

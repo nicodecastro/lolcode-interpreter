@@ -12,7 +12,8 @@ HAI
 
 	VISIBLE "Choice: "
 	GIMMEH choice
-
+	
+	choice IS NOW A NUMBR		BTW added since choice is YARN and 1 is NUMBAR, no auto typecast for comp op
 	BOTH SAEM choice AN 1
 	O RLY?
 		YA RLY
