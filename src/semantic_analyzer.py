@@ -4,6 +4,16 @@
 3) ARITH OPS /
 4) INPUT /
 5) CONCAT /
+6) TYPECASTING /
+
+TODO
+- bool ops /
+- comp /
+- ifelse /
+- switch /
+- loops
+- funcs
+- expr, concat, literal /
 '''
 
 import customtkinter as ctk
@@ -17,6 +27,8 @@ def semantic_analysis(symbols, parse_tree, print_console, reset_console, semanti
     global symbol_table 
     symbol_table = {}
     print("\n==================== PERFORMING SEMANTIC ANALYSIS ====================\n")
+
+    set_or_update_it("NOOB Literal", "")
 
     # handle variable declarations
     for token in parse_tree:
@@ -54,10 +66,8 @@ def process_statements(statements, print_console):
         print(statement) 
         if statement[0] == 'print':
             print_str = []
-            add_space = True
             if statement[1][0] == "concat":
                 statement = statement[1]
-                add_space = False
             for i in range(1,len(statement)):
                 if statement[i][0] == 'literal':
                     print_type, print_val = typecast((statement[i][1], re.sub(r'\"', '', statement[i][2])), "YARN Literal")
@@ -74,10 +84,8 @@ def process_statements(statements, print_console):
                     print_type, print_val = typecast((print_type, print_val), "YARN Literal")
                     set_or_update_it(print_type, print_val)
                     print_str.append(symbol_table["IT"]['value'])
-            if add_space:
-                print_console(" ".join(print_str))
-            else:
-                print_console("".join(print_str))
+            print_console("".join(print_str))
+            set_or_update_it("YARN Literal", "".join(print_str))
         elif statement[0] == 'input':
             dialog = ctk.CTkInputDialog(text="Enter input:", title="Input")
             check_variable(statement[1][1])
@@ -127,6 +135,41 @@ def process_statements(statements, print_console):
             new_var_type, new_var_val = typecast((symbol_table[statement[1][1]]['type'],symbol_table[statement[1][1]]['value']),statement[2][2])
             set_or_update_it(new_var_type, new_var_val)
             update_variable(statement[1][1], new_var_type, new_var_val)
+        elif statement[0] in ['expr', 'literal', 'varident']:
+            new_it = evaluate_expr(statement)  # literal, varident, expr
+            set_or_update_it(new_it[0], new_it[1])
+        elif statement[0] == "ifelse":
+            if symbol_table['IT']['type'] == "TROOF Literal":
+                if symbol_table['IT']['value'] == "WIN":
+                    process_statements(statement[1][1:], print_console)
+                elif symbol_table['IT']['value'] == "FAIL" and statement[-1][0] == 'else':
+                    process_statements(statement[2][1:], print_console)
+        elif statement[0] == "switchcase":
+            cases = statement[1:]
+            switch_val = symbol_table["IT"]["value"]
+            case_matched = False
+
+            for case in cases:
+                if case[0] == "omg":
+                    # cmp case val with switch val
+                    case_val = evaluate_expr(case[1])
+
+                    # fix int/float
+                    case_val = typecast(case_val, case_val[0])
+
+                    # execute code if fall-through or matched case
+                    if case_matched or case_val[1] == switch_val:
+                        case_matched = True
+                        process_statements(case[2:], print_console)
+
+                        if "loopbreak" in case:     # if GTFO found, skip succeeding cases
+                            break
+
+                elif case[0] == "omgwtf":
+                    # execute default if no match
+                    if not case_matched:
+                        process_statements(case[1:], print_console)
+                        break
 
 def process_vardecport(vardecport):
     for var in vardecport[1:]:
@@ -172,12 +215,16 @@ def evaluate_expr(expr):
 
         if expr[1] in ["SUM OF", "DIFF OF", "PRODUKT OF", "QUOSHUNT OF", "MOD OF", "BIGGR OF", "SMALLR OF"]:
             # at least one numbar, result is numbar
-            if op1[0] == "NUMBAR Literal" or op1[0] == "NUMBAR Literal":
+            if op1[0] == "NUMBAR Literal" or op2[0] == "NUMBAR Literal":
                 op1 = typecast(op1, "NUMBAR Literal")
                 op2 = typecast(op2, "NUMBAR Literal")
             else:
-                op1 = typecast(op1, "NUMBR Literal")
-                op2 = typecast(op2, "NUMBR Literal")
+                try:
+                    op1 = typecast(op1, "NUMBR Literal")
+                    op2 = typecast(op2, "NUMBR Literal")
+                except:
+                    op1 = typecast(op1, "NUMBAR Literal")
+                    op2 = typecast(op2, "NUMBAR Literal")
 
             # Perform the operation
             if expr[1] == "SUM OF":
@@ -189,7 +236,7 @@ def evaluate_expr(expr):
             elif expr[1] == "QUOSHUNT OF":
                 if op2[1] == 0:
                     raise Exception("Runtime Error: Division by zero.")
-                if op1[0] == "NUMBAR Literal" or op1[0] == "NUMBAR Literal":
+                if op1[0] == "NUMBAR Literal" or op2[0] == "NUMBAR Literal":
                     return op1[0], op1[1] / op2[1]
                 else:
                     return op1[0], op1[1] // op2[1]
@@ -202,7 +249,74 @@ def evaluate_expr(expr):
                 return op1[0], max(op1[1], op2[1])
             elif expr[1] == "SMALLR OF":
                 return op1[0], min(op1[1], op2[1])
-                
+    elif expr[0] == "compop":
+        op1 = evaluate_expr(expr[2])
+        op2 = evaluate_expr(expr[3])
+        
+        if expr[1] in ["BOTH SAEM", "DIFFRINT"]:
+            # fix int/float
+            op1 = typecast(op1, op1[0])
+            op2 = typecast(op2, op2[0])
+
+            if op1[0] != op2[0]:
+                raise ValueError(f"Type mismatch in comparison operation ({op1[0]} and {op2[0]})")
+            elif expr[1] == "BOTH SAEM":
+                if op1[1] == op2[1]:
+                    return "TROOF Literal", "WIN"
+                else:
+                    return "TROOF Literal", "FAIL"
+            elif expr[1] == "DIFFRINT":
+                if op1[1] == op2[1]:
+                    return "TROOF Literal", "FAIL"
+                else:
+                    return "TROOF Literal", "WIN"
+    elif expr[0] == "boolop":
+        if expr[1] in ("NOT", "BOTH OF", "EITHER OF", "WON OF"):
+            if expr[1] == "NOT":
+                op1 = evaluate_expr(expr[2])
+                op1 = typecast(op1, "TROOF Literal")
+                if op1[1] == "WIN":
+                    return op1[0], "FAIL"
+                else:
+                    return op1[0], "WIN"
+
+            op1 = evaluate_expr(expr[2])
+            op2 = evaluate_expr(expr[3])
+
+            op1 = typecast(op1, "TROOF Literal")
+            op2 = typecast(op2, "TROOF Literal")
+
+            if expr[1] == "BOTH OF":
+                if op1[1] == "WIN" and op2[1] == "WIN":
+                    return op1[0], "WIN"
+                else:
+                    return op1[0], "FAIL"
+            elif expr[1] == "EITHER OF":
+                if op1[1] == "WIN" or op2[1] == "WIN":
+                    return op1[0], "WIN"
+                else:
+                    return op1[0], "FAIL"
+            elif expr[1] == "WON OF":
+                if (op1[1] == "WIN") ^ (op2[1] == "WIN"):
+                    return op1[0], "WIN"
+                else:
+                    return op1[0], "FAIL"
+    elif expr[0] == "infboolop":
+        if expr[1] in ("ANY OF", "ALL OF"):
+            oplist = []
+            for op in expr[2:]:
+                oplist.append(typecast(evaluate_expr(op), "TROOF Literal"))
+            
+            if expr[1] == "ANY OF":
+                if any([True if op[1] == "WIN" else False for op in oplist]):
+                    return oplist[0][0], "WIN"
+                else:
+                    return oplist[0][0], "FAIL"
+            elif expr[1] == "ALL OF":
+                if all([True if op[1] == "WIN" else False for op in oplist]):
+                    return oplist[0][0], "WIN"
+                else:
+                    return oplist[0][0], "FAIL"
     else:
         raise ValueError("Unknown operation")
 
