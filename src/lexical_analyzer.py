@@ -1,12 +1,12 @@
 '''
-TODO Bugs
+TODO Future
 - Extra chars showing up as separate word, e.g. NUMBARR => NUMBAR and R
 '''
 
 import re
 
 LITERAL_VAR_IDENTIFIER_PATTERN = [
-    # ("YARN Literal", '\"[^"]+\"'),
+    # ("YARN Literal", '\"[^"]+\"'),        # Added as separate check
     ("NUMBAR Literal",r"^-?[0-9]+\.[0-9]+"),
     ("NUMBR Literal", "^-?[0-9]+"),
     ("TROOF Literal", "(WIN|FAIL)"),
@@ -129,13 +129,13 @@ def tokenize_classify(line: str, is_OBTW: list) -> list:
         return tokens
 
     # check for in-line comments, remove them, we will append them later as the last step
-    inline_btw_match = re.search(" BTW(.*)", line)
+    inline_btw_match = re.search("\s+BTW(.*)", line)
     inline_btw_tokens = []
     if inline_btw_match:
         inline_btw_tokens.append(("BTW", "Keyword"))
         comment = inline_btw_match.group(1).strip()
         inline_btw_tokens.append((comment, "Comment"))
-        line = re.sub(" BTW(.*)", " ", line)
+        line = re.sub("\s+BTW(.*)", " ", line)
 
     # test for keywords
     while True:
@@ -161,7 +161,7 @@ def tokenize_classify(line: str, is_OBTW: list) -> list:
             tokens.extend(found_tokens)
             continue       # start searching for keyword again
 
-        # try for literal
+        # try for yarn literal
         yarn_token_match = re.match('(\"[^"]+\")', line)
         if yarn_token_match:
             found_tokens.append((yarn_token_match.group(1), "YARN Literal"))

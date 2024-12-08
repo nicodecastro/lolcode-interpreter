@@ -1,6 +1,7 @@
 '''
-Implement
-TODO Noob
+TODO Future
+- NOOB Literal
+- optional TIL/WILE <expr>
 '''
 
 LEXEME = 0
@@ -91,7 +92,7 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
 
         # =============== Typecasting ===============
         elif token[LEXEME] == "MAEK":
-            # TODO Clarify if need A, e.g. MAEK var1 A NUMBAR vs. y R MAEK A y TROOF (for now implementation is MAEK y A TROOF)
+            # MAEK Typecast Syntax: MAEK <variable> A <type literal>
             if index < len(parse_tree)-2 and parse_tree[index+2][LEXEME] == "A" and (parse_tree[index+1][TYPE] in ("varident", "literal")):
                 if index < len(parse_tree)-3 and (parse_tree[index+3][CLASSIFICATION] == "TYPE Literal"):
                     parse_tree[index] = ["typecast", parse_tree[index+1], parse_tree[index+3]]
@@ -103,8 +104,6 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
         elif token[TYPE] == 'varident' and index < len(parse_tree)-1 and parse_tree[index+1][LEXEME] == "IS NOW A":
             if index < len(parse_tree)-2 and (parse_tree[index+2][CLASSIFICATION] == "TYPE Literal"):
                 parse_tree[index] = ["typecast", parse_tree[index], parse_tree[index+2]]
-                if index < len(parse_tree)-3 and parse_tree[index+3] != "linebreak":
-                    return syntax_err_handler("Expected new line after MAEK")
                 del parse_tree[index+1:index+3]
             else:
                 return syntax_err_handler("Expected type literal to typecast to")
@@ -245,10 +244,11 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
                 del parse_tree[index]
             funcall_tokens.append(funccall_param_tokens)
 
-            # if parse_tree[index][LEXEME] != 'MKAY':
-            #     return syntax_err_handler("Expected 'MKAY' after function call")
-            if parse_tree[index] != "linebreak":
-                return syntax_err_handler("Unexpected statements after function call")
+            if parse_tree[index][LEXEME] != 'MKAY':
+                return syntax_err_handler("Expected 'MKAY' after function call")
+            del parse_tree[index]
+            # if parse_tree[index] != "linebreak":
+            #     return syntax_err_handler("Unexpected statements after function call")
 
             parse_tree.insert(index, funcall_tokens)
 
@@ -369,7 +369,7 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
                 return syntax_err_handler("Expected variable for loop")
             loop_tokens[-1].append(parse_tree[index])
             del parse_tree[index]
-            if parse_tree[index][LEXEME] not in ("TIL", "WILE"):        # TODO optional TIL/WILE <expr>
+            if parse_tree[index][LEXEME] not in ("TIL", "WILE"):
                 return syntax_err_handler("Expected 'TIL/WILE' for loop")
             loop_tokens.append(['condexpr', parse_tree[index][LEXEME]])
             del parse_tree[index]
@@ -452,6 +452,7 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
 
     # =============== Functions ===============
     index = 0
+    num_funcs = 0
     for token in parse_tree:
         if token[LEXEME] == "HOW IZ I":
             del parse_tree[index]
@@ -524,7 +525,8 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
                 del parse_tree[index]
             func_tokens.append(func_statements)
             func_tokens.append(retval)
-            parse_tree.insert(0, func_tokens)
+            parse_tree.insert(num_funcs, func_tokens)
+            num_funcs += 1
         index += 1
 
     # =============== Statements ===============

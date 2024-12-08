@@ -5,9 +5,6 @@
 
 '''
 TODO:
-Important, Urgent
-- Update identifiers by type
-
 Important, Not Urgent
 - Writing file when no file selected
 - Overwrite warning
@@ -45,7 +42,7 @@ class LolcodeInterpreterApp(ctk.CTk):
         self.load_testcase()    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
 
     def load_testcase(self) -> None:    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
-        selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "08_switch.lol")
+        selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "10_functions.lol")
         self.current_filepath = selected_file
         self.current_filename.set(os.path.basename(selected_file))
         file = open(self.current_filepath, 'r')
@@ -143,8 +140,11 @@ class LolcodeInterpreterApp(ctk.CTk):
         self.console.grid(column=0, row=0, sticky="nsew")
 
     def select_file(self) -> None:
-        # Clear text editor
+        # Clear text editor, console, and tables
         self.text_editor.delete("0.0", "end")
+        self.reset_console()
+        self.reset_lexeme_table()
+        self.reset_symbol_table()
 
         selected_file = ctk.filedialog.askopenfilename(initialdir=os.path.join(os.getcwd(), "tests", "lolcode-files"), filetypes=(("LOLCODE files", "*.lol*"), ("all files", "*.*")))
         if selected_file:
