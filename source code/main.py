@@ -146,7 +146,7 @@ class LolcodeInterpreterApp(ctk.CTk):
         self.reset_lexeme_table()
         self.reset_symbol_table()
 
-        selected_file = ctk.filedialog.askopenfilename(initialdir=os.path.join(os.getcwd(), "tests", "lolcode-files"), filetypes=(("LOLCODE files", "*.lol*"), ("all files", "*.*")))
+        selected_file = ctk.filedialog.askopenfilename(initialdir=os.path.join(os.getcwd()), filetypes=(("LOLCODE files", "*.lol*"), ("all files", "*.*")))
         if selected_file:
             self.current_filepath = selected_file
             self.current_filename.set(os.path.basename(selected_file))
