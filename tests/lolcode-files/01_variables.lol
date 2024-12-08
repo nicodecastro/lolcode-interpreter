@@ -1,8 +1,5 @@
 BTW start of the program
-HAI BTW in-line comment
-    OBTW this is
-	the way
-    TLDR
+HAI
     WAZZUP
         BTW variable dec
         I HAS A monde
@@ -31,7 +28,6 @@ HAI BTW in-line comment
     VISIBLE quo
 
     BTW print expressions
-    VISIBLE SUM OF 3 AN 5 AN SUM OF 9 AN 2
-    VISIBLE SUM OF PRODUKT OF 3 AN 5 AN BIGGR OF DIFF OF 17 AN 2 AN 5
-    VISIBLE BIGGR OF PRODUKT OF x AN x AN QUOSHUNT OF SUM OF 3 AN 5 AN 2
+    VISIBLE SUM OF PRODUKT OF 3 AN 5 AN BIGGR OF DIFF OF 17 AN 2 AN 5 BTW 3*5 + max(17-2, 5) = 30
+    VISIBLE BIGGR OF PRODUKT OF 11 AN 2 AN QUOSHUNT OF SUM OF 3 AN 5 AN 2 BTW max(11*2, (3+5)/2) = 22
 KTHXBYE

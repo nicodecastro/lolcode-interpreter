@@ -20,6 +20,7 @@ HAI
         x < y
         x > y
     TLDR
+    x R MAEK x A NUMBAR     BTW added since x is still YARN, no auto typecasting for comp op
     VISIBLE BOTH SAEM BIGGR OF x AN y AN x
     VISIBLE BOTH SAEM x AN SMALLR OF x AN y
     VISIBLE DIFFRINT BIGGR OF x AN y AN x
