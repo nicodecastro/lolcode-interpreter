@@ -429,7 +429,6 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
 
     # =============== Variable Declaration Portion ===============
     index = 0
-    vardec_start = 0
     for token in parse_tree:
         if token[LEXEME] == "WAZZUP" and index < len(parse_tree)-1 and parse_tree[index+1] == "linebreak":
             del parse_tree[index:index+2]
