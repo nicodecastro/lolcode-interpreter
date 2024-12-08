@@ -137,6 +137,7 @@ class LolcodeInterpreterApp(ctk.CTk):
         console_frame.grid_rowconfigure(0, weight=1)
 
         self.console = ctk.CTkTextbox(console_frame)
+        self.console.configure(state="disabled")
         self.console.grid(column=0, row=0, sticky="nsew")
 
     def select_file(self) -> None:
@@ -215,7 +216,9 @@ class LolcodeInterpreterApp(ctk.CTk):
             self.symbol_table.delete(symbol)
 
     def reset_console(self):
+        self.console.configure(state="normal")
         self.console.delete('1.0', "end")
+        self.console.configure(state="disabled")
 
     def add_to_lexeme_table(self, tokens):
         # deduped_tokens = tokens
@@ -230,7 +233,9 @@ class LolcodeInterpreterApp(ctk.CTk):
         print("\nAdded variables to symbol table")
 
     def print_console(self, message):
+        self.console.configure(state="normal")
         self.console.insert("end", f"{message}\n")
+        self.console.configure(state="disabled")
 
     def syntax_err_handler(self, message):
         self.console.insert("end", f"Syntax Error: {message}\n")
