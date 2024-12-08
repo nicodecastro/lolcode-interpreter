@@ -437,7 +437,10 @@ def typecast(value, target_type):
         elif target_type == "NUMBR Literal" or target_type == "NUMBR":
             return ("NUMBR Literal", 0)
         elif target_type == "NUMBAR Literal" or target_type == "NUMBAR":
-            return ("NUMBAR Literal", dec.Decimal(0.0))
+            try:
+                return ("NUMBAR Literal", dec.Decimal(0.0))
+            except:
+                raise Exception(f"Unable to typecast: {source_value} to {target_type}")
         elif target_type == "YARN Literal" or target_type == "YARN":
             return ("YARN Literal", "")
         elif target_type == "NOOB Literal" or target_type == "NOOB":
@@ -485,12 +488,12 @@ def typecast(value, target_type):
         if target_type == "NUMBR Literal" or target_type == "NUMBR":
             try:
                 return ("NUMBR Literal", int(re.sub(r'\"', '', source_value)))
-            except ValueError:
+            except Exception:
                 raise Exception(f"Invalid typecast: YARN Literal '{source_value}' cannot be converted to NUMBR Literal")
         elif target_type == "NUMBAR Literal" or target_type == "NUMBAR":
             try:
                 return ("NUMBAR Literal", dec.Decimal(re.sub(r'\"', '', source_value)))
-            except ValueError:
+            except Exception:
                 raise Exception(f"Invalid typecast: YARN Literal '{source_value}' cannot be converted to NUMBAR Literal")
         elif (target_type == "TROOF Literal" or target_type == "TROOF"):
             return ("TROOF Literal", "FAIL" if source_value == "" or source_value == None else "WIN")
