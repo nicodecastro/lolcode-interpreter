@@ -4,7 +4,7 @@
 # DESCRIPTION: An interpreter for the LOLCODE language. A project for CMSC 124.
 
 '''
-TODO:
+TODO Future:
 Important, Not Urgent
 - Writing file when no file selected
 - Overwrite warning

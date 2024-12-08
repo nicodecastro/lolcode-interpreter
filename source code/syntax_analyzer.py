@@ -68,7 +68,6 @@ def syntax_analysis(tokens: list, syntax_err_handler) -> int:
                     tokens[index+params_index] = (parse_tree[index+params_index][LEXEME], "Function Parameter")
                     parse_tree[index+params_index] = ["funcparam", parse_tree[index+params_index][LEXEME]]
                 params_index += 1
-        # TODO function params
         # loop label
         elif token[LEXEME] in ["IM IN YR", "IM OUTTA YR"] and index < len(parse_tree)-1 and parse_tree[index+1][CLASSIFICATION] == "Identifier":
             tokens[index+1] = (parse_tree[index+1][LEXEME], "Loop Label")
