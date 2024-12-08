@@ -39,16 +39,16 @@ class LolcodeInterpreterApp(ctk.CTk):
 
         self.setup_gui()
 
-        self.load_testcase()    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
+        # self.load_testcase()    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
 
-    def load_testcase(self) -> None:    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
-        selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "10_functions.lol")
-        self.current_filepath = selected_file
-        self.current_filename.set(os.path.basename(selected_file))
-        file = open(self.current_filepath, 'r')
-        self.lolcode_source = file.read()
-        file.close()
-        self.text_editor.insert(ctk.END, self.lolcode_source)
+    # def load_testcase(self) -> None:    # TODO: FOR TESTING PURPOSES ONLY, REMOVE
+    #     selected_file = os.path.join(os.getcwd(), "tests", "lolcode-files", "10_functions.lol")
+    #     self.current_filepath = selected_file
+    #     self.current_filename.set(os.path.basename(selected_file))
+    #     file = open(self.current_filepath, 'r')
+    #     self.lolcode_source = file.read()
+    #     file.close()
+    #     self.text_editor.insert(ctk.END, self.lolcode_source)
 
     def setup_gui(self) -> None:
         # Upper Left Frame
@@ -60,7 +60,7 @@ class LolcodeInterpreterApp(ctk.CTk):
 
         # file_explorer
         self.current_filepath = None
-        self.current_filename = ctk.StringVar(upper_left_frame, value="(None)")
+        self.current_filename = ctk.StringVar(upper_left_frame, value="Select a .lol file")
         file_explorer_button = ctk.CTkButton(upper_left_frame, textvariable=self.current_filename, height=15, command=self.select_file, anchor="w")
         file_explorer_button.grid(column=0, row=0, sticky="nsew",pady=(0, 5))
 
@@ -152,7 +152,7 @@ class LolcodeInterpreterApp(ctk.CTk):
             self.current_filename.set(os.path.basename(selected_file))
         else:
             self.current_filepath = None
-            self.current_filename.set('(None)')
+            self.current_filename.set('Select a .lol file')
             return
 
         file = open(self.current_filepath, 'r')
@@ -204,6 +204,8 @@ class LolcodeInterpreterApp(ctk.CTk):
         # update symbol table
         self.add_to_symbol_table(self.symbols)
 
+        print("\n==================== COMPLETED ALL ====================")
+
     def reset_lexeme_table(self):
         for token in self.token_table.get_children():
             self.token_table.delete(token)
@@ -216,8 +218,8 @@ class LolcodeInterpreterApp(ctk.CTk):
         self.console.delete('1.0', "end")
 
     def add_to_lexeme_table(self, tokens):
-        deduped_tokens = tokens
-        # deduped_tokens = list(dict.fromkeys(tokens))     # TODO UNCOMMENT
+        # deduped_tokens = tokens
+        deduped_tokens = list(dict.fromkeys(tokens))     # TODO UNCOMMENT
         for token in deduped_tokens:
             self.token_table.insert("", 'end', text="1", values=token)
         print("\nAdded deduped tokens to lexemes table")

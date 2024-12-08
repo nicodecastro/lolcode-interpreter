@@ -1,3 +1,8 @@
+# LOLCODE Interpreter
+# AUTHOR: John Nico T. De Castro
+# CREATION DATE: 11/12/2024
+# DESCRIPTION: An interpreter for the LOLCODE language. A project for CMSC 124.
+
 '''
 TODO Future
 - NOOB Literal

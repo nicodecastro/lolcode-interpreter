@@ -1,20 +1,7 @@
-'''
-1) Variable Declaration/Initialization /
-2) VISIBLE /
-3) ARITH OPS /
-4) INPUT /
-5) CONCAT /
-6) TYPECASTING /
-
-TODO
-- bool ops /
-- comp /
-- ifelse /
-- switch /
-- loops
-- funcs
-- expr, concat, literal /
-'''
+# LOLCODE Interpreter
+# AUTHOR: John Nico T. De Castro
+# CREATION DATE: 11/12/2024
+# DESCRIPTION: An interpreter for the LOLCODE language. A project for CMSC 124.
 
 import customtkinter as ctk
 import re
@@ -65,6 +52,9 @@ def semantic_analysis(symbols, parse_tree, print_console, reset_console, semanti
     # append to symbols
     for ident,sym_data in symbol_table.items():
          symbols.append([ident, sym_data['value']])
+
+    print("==================== COMPLETED SEMANTIC ANALYSIS ====================")
+    return 0
 
 def process_funcs(statements):
     func_name = statements[1][1]

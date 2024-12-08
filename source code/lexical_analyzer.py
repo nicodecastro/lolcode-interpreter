@@ -1,3 +1,8 @@
+# LOLCODE Interpreter
+# AUTHOR: John Nico T. De Castro
+# CREATION DATE: 11/12/2024
+# DESCRIPTION: An interpreter for the LOLCODE language. A project for CMSC 124.
+
 '''
 TODO Future
 - Extra chars showing up as separate word, e.g. NUMBARR => NUMBAR and R
@@ -129,13 +134,13 @@ def tokenize_classify(line: str, is_OBTW: list) -> list:
         return tokens
 
     # check for in-line comments, remove them, we will append them later as the last step
-    inline_btw_match = re.search("\s+BTW(.*)", line)
+    inline_btw_match = re.search(r"\s+BTW(.*)", line)
     inline_btw_tokens = []
     if inline_btw_match:
         inline_btw_tokens.append(("BTW", "Keyword"))
         comment = inline_btw_match.group(1).strip()
         inline_btw_tokens.append((comment, "Comment"))
-        line = re.sub("\s+BTW(.*)", " ", line)
+        line = re.sub(r"\s+BTW(.*)", " ", line)
 
     # test for keywords
     while True:
