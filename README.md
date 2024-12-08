@@ -17,7 +17,10 @@ A LOLCODE interpreter built using Python 3 and customtkinter, featuring a GUI fo
 
 ## Installation
 
-1. Install Python 3 (Preferably Python 3.12.4)
+1. Install [Python 3](https://www.python.org/downloads/) (Preferably Python 3.12.4) and pip
+  - To check if they are already installed type the following commands:
+    - `python --version`
+    - `pip -V`
 2. Install the dependencies in requirements.txt
    1. In your terminal, navigate to the project directory
    2. Install all the packages using the command: `pip install -r requirements.txt`
