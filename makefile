@@ -1,2 +1,2 @@
 run:
-	py ./src/main.py
+	py ./'source code'/main.py
