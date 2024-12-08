@@ -238,11 +238,15 @@ class LolcodeInterpreterApp(ctk.CTk):
         self.console.configure(state="disabled")
 
     def syntax_err_handler(self, message):
+        self.console.configure(state="normal")
         self.console.insert("end", f"Syntax Error: {message}\n")
+        self.console.configure(state="disabled")
         return SYNTAX_ERR
     
     def semantic_err_handler(self, message):
+        self.console.configure(state="normal")
         self.console.insert("end", f"Semantic Error: {message}\n")
+        self.console.configure(state="disabled")
         return SEMANTIC_ERR
 
 if __name__=="__main__":
