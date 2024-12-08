@@ -5,6 +5,7 @@
 
 import customtkinter as ctk
 import re
+import decimal as dec
 
 SEMANTIC_ERR = 2
 
@@ -154,7 +155,7 @@ def process_statements(statements, print_console, passed_sym_table):
         elif statement[0] == 'typecast':
             new_var_type, new_var_val = typecast((symbol_table[statement[1][1]]['type'],symbol_table[statement[1][1]]['value']),statement[2][2])
             set_or_update_it(new_var_type, new_var_val, symbol_table)
-            update_variable(statement[1][1], new_var_type, new_var_val)
+            update_variable(statement[1][1], new_var_type, float(new_var_val))
         elif statement[0] in ['expr', 'literal', 'varident']:
             new_it = evaluate_expr(statement, symbol_table)  # literal, varident, expr
             set_or_update_it(new_it[0], new_it[1], symbol_table)
@@ -244,10 +245,10 @@ def process_statements(statements, print_console, passed_sym_table):
                 update_func_variable(func_sym_table, params[index], new_val[0], new_val[1])
             
             func_body = func_table[func_name]["body"]
-            # # # TODO execute func_body but with local variable scope
+            # execute func_body but with local variable scope
             process_statements(func_body, print_console, func_sym_table)
 
-            # # TODO set return val as IT
+            # set return val as IT of local variable symbol table, then set it as IT of global symbol table
             return_val = func_table[func_name]["return_val"]
             if return_val == "NOOB": 
                 process_statements([("literal", "NOOB Literal", "")], print_console, func_sym_table)
@@ -436,7 +437,7 @@ def typecast(value, target_type):
         elif target_type == "NUMBR Literal" or target_type == "NUMBR":
             return ("NUMBR Literal", 0)
         elif target_type == "NUMBAR Literal" or target_type == "NUMBAR":
-            return ("NUMBAR Literal", 0.0)
+            return ("NUMBAR Literal", dec.Decimal(0.0))
         elif target_type == "YARN Literal" or target_type == "YARN":
             return ("YARN Literal", "")
         elif target_type == "NOOB Literal" or target_type == "NOOB":
@@ -448,7 +449,7 @@ def typecast(value, target_type):
         if target_type == "NUMBR Literal" or target_type == "NUMBR":
             return ("NUMBR Literal", 1 if source_value == "WIN" else 0)
         elif target_type == "NUMBAR Literal" or target_type == "NUMBAR":
-            return ("NUMBAR Literal", 1.0 if source_value == "WIN" else 0.0)
+            return ("NUMBAR Literal", dec.Decimal(1.0) if source_value == "WIN" else dec.Decimal(0.0))
         elif target_type == "YARN Literal" or target_type == "YARN":
             return ("YARN Literal", source_value)
         elif target_type == "TROOF Literal" or target_type == "TROOF":
@@ -458,7 +459,7 @@ def typecast(value, target_type):
 
     elif source_type == "NUMBR Literal" or source_type == "NUMBR":
         if target_type == "NUMBAR Literal" or target_type == "NUMBAR":
-            return ("NUMBAR Literal", float(source_value))
+            return ("NUMBAR Literal", dec.Decimal(float(source_value)))
         elif target_type == "YARN Literal" or target_type == "YARN":
             return ("YARN Literal", str(source_value))
         elif target_type == "NUMBR Literal" or target_type == "NUMBR":
@@ -472,9 +473,9 @@ def typecast(value, target_type):
         if target_type == "NUMBR Literal" or target_type == "NUMBR":
             return ("NUMBR Literal", int(source_value))  # Truncate decimal part
         elif target_type == "YARN Literal" or target_type == "YARN":
-            return ("YARN Literal", f"{source_value}")
+            return ("YARN Literal", str(float(source_value)))
         elif source_type == "NUMBAR Literal":
-            return ("NUMBAR Literal", float(source_value))
+            return ("NUMBAR Literal", dec.Decimal(source_value))
         elif (target_type == "TROOF Literal" or target_type == "TROOF"):
             return ("TROOF Literal", "FAIL" if source_value == 0 else "WIN")
         else:
@@ -488,7 +489,7 @@ def typecast(value, target_type):
                 raise Exception(f"Invalid typecast: YARN Literal '{source_value}' cannot be converted to NUMBR Literal")
         elif target_type == "NUMBAR Literal" or target_type == "NUMBAR":
             try:
-                return ("NUMBAR Literal", float(re.sub(r'\"', '', source_value)))
+                return ("NUMBAR Literal", dec.Decimal(re.sub(r'\"', '', source_value)))
             except ValueError:
                 raise Exception(f"Invalid typecast: YARN Literal '{source_value}' cannot be converted to NUMBAR Literal")
         elif (target_type == "TROOF Literal" or target_type == "TROOF"):
